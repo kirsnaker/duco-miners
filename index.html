@@ -1,0 +1,584 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Duino Coin Mining Calculator</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #f8fafc;
+            color: #334155;
+            line-height: 1.6;
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 40px;
+            padding-top: 20px;
+        }
+
+        header h1 {
+            font-size: 2.5rem;
+            color: #1e293b;
+            margin-bottom: 10px;
+            font-weight: 700;
+        }
+
+        header p {
+            font-size: 1.1rem;
+            color: #64748b;
+            max-width: 800px;
+            margin: 0 auto 20px;
+        }
+
+        .logo {
+            font-size: 3rem;
+            color: #3b82f6;
+            margin-bottom: 15px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            margin-bottom: 30px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+            border: 1px solid #e2e8f0;
+        }
+
+        .input-group {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        input {
+            flex: 1;
+            padding: 14px 20px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.2s;
+        }
+
+        input:focus {
+            outline: none;
+            border-color: #3b82f6;
+        }
+
+        button {
+            background: #3b82f6;
+            color: white;
+            border: none;
+            padding: 14px 30px;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+            white-space: nowrap;
+        }
+
+        button:hover {
+            background: #2563eb;
+        }
+
+        button:disabled {
+            background: #94a3b8;
+            cursor: not-allowed;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .stat-box {
+            background: #f8fafc;
+            border-radius: 8px;
+            padding: 20px;
+            text-align: center;
+            border: 1px solid #e2e8f0;
+        }
+
+        .stat-label {
+            font-size: 0.9rem;
+            color: #64748b;
+            margin-bottom: 8px;
+        }
+
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #1e293b;
+        }
+
+        .period-selector {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            margin-bottom: 30px;
+            justify-content: center;
+        }
+
+        .period-btn {
+            background: #f1f5f9;
+            color: #475569;
+            border: 2px solid #e2e8f0;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s;
+        }
+
+        .period-btn:hover {
+            background: #e2e8f0;
+        }
+
+        .period-btn.active {
+            background: #3b82f6;
+            color: white;
+            border-color: #3b82f6;
+        }
+
+        .results-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+        }
+
+        .result-card {
+            background: linear-gradient(135deg, #f0f9ff, #e0f2fe);
+            border-radius: 10px;
+            padding: 25px;
+            text-align: center;
+            border: 1px solid #bae6fd;
+        }
+
+        .result-title {
+            font-size: 1rem;
+            color: #0369a1;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .result-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #0c4a6e;
+            margin-bottom: 5px;
+        }
+
+        .result-subtext {
+            font-size: 0.9rem;
+            color: #64748b;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            display: none;
+        }
+
+        .spinner {
+            border: 4px solid #f1f5f9;
+            border-top: 4px solid #3b82f6;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 15px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .error {
+            background: #fef2f2;
+            border: 1px solid #fecaca;
+            color: #dc2626;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .error.active {
+            display: block;
+        }
+
+        .warning {
+            background: #fffbeb;
+            border: 1px solid #fde68a;
+            color: #92400e;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            margin-top: 20px;
+            display: none;
+        }
+
+        .warning.active {
+            display: block;
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            padding-top: 20px;
+            color: #64748b;
+            font-size: 0.9rem;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        @media (max-width: 768px) {
+            .input-group {
+                flex-direction: column;
+            }
+            
+            header h1 {
+                font-size: 2rem;
+            }
+            
+            .stat-value {
+                font-size: 1.5rem;
+            }
+            
+            .result-value {
+                font-size: 1.7rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <div class="logo">
+                <i class="fas fa-coins"></i>
+            </div>
+            <h1>Duino Coin Mining Calculator</h1>
+            <p>Enter your Duino Coin username to check your balance and calculate mining earnings for different time periods</p>
+        </header>
+
+        <div class="card">
+            <div class="input-group">
+                <input type="text" id="username" placeholder="Enter your Duino Coin username (e.g., 'revox')" value="revox">
+                <button id="fetch-data">
+                    <i class="fas fa-search"></i> Get Data
+                </button>
+            </div>
+            
+            <div class="loading" id="loading">
+                <div class="spinner"></div>
+                <p>Loading data from Duino Coin server...</p>
+            </div>
+            
+            <div class="error" id="error-message">
+                Error loading data. Please check the username and try again.
+            </div>
+            
+            <div class="warning" id="warning-message">
+                This user is not currently mining. Estimated earnings are based on average mining performance.
+            </div>
+        </div>
+
+        <div class="card" id="balance-section" style="display: none;">
+            <h2 style="margin-bottom: 20px; color: #1e293b;">Current Balance</h2>
+            
+            <div class="stats-grid">
+                <div class="stat-box">
+                    <div class="stat-label">Balance</div>
+                    <div class="stat-value" id="balance-amount">0 DUCO</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">Hashrate</div>
+                    <div class="stat-value" id="hashrate">0 H/s</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">Active Miners</div>
+                    <div class="stat-value" id="miners">0</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">Mining Status</div>
+                    <div class="stat-value" id="mining-status">Inactive</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="card" id="calculator-section" style="display: none;">
+            <h2 style="margin-bottom: 20px; color: #1e293b;">Mining Calculator</h2>
+            <p style="text-align: center; margin-bottom: 25px; color: #64748b;">Select time period to calculate potential earnings:</p>
+            
+            <div class="period-selector">
+                <button class="period-btn active" data-period="1">1 Hour</button>
+                <button class="period-btn" data-period="12">12 Hours</button>
+                <button class="period-btn" data-period="24">24 Hours</button>
+                <button class="period-btn" data-period="168">1 Week</button>
+                <button class="period-btn" data-period="720">1 Month</button>
+                <button class="period-btn" data-period="8760">1 Year</button>
+            </div>
+            
+            <div class="results-grid">
+                <div class="result-card">
+                    <div class="result-title">Expected Earnings</div>
+                    <div class="result-value" id="expected-earnings">0 DUCO</div>
+                    <div class="result-subtext">Based on current mining status</div>
+                </div>
+                
+                <div class="result-card">
+                    <div class="result-title">Daily Earnings</div>
+                    <div class="result-value" id="daily-earnings">0 DUCO</div>
+                    <div class="result-subtext">Per 24 hours</div>
+                </div>
+                
+                <div class="result-card">
+                    <div class="result-title">USD Value</div>
+                    <div class="result-value" id="earnings-usd">$0.00</div>
+                    <div class="result-subtext">Approximate value</div>
+                </div>
+            </div>
+            
+            <div style="margin-top: 30px; padding: 15px; background: #f8fafc; border-radius: 8px; font-size: 0.9rem; color: #64748b;">
+                <p><i class="fas fa-info-circle"></i> <strong>Note:</strong> Calculations are estimates. If user is not currently mining, estimates are based on average mining performance.</p>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p>Uses official Duino Coin API | Data updates in real time</p>
+            <p>Duino Coin - A cryptocurrency for microcontrollers and PCs</p>
+        </div>
+    </div>
+
+    <script>
+        const usernameInput = document.getElementById('username');
+        const fetchDataButton = document.getElementById('fetch-data');
+        const loadingElement = document.getElementById('loading');
+        const errorMessage = document.getElementById('error-message');
+        const warningMessage = document.getElementById('warning-message');
+        const balanceSection = document.getElementById('balance-section');
+        const calculatorSection = document.getElementById('calculator-section');
+        const balanceAmount = document.getElementById('balance-amount');
+        const hashrateElement = document.getElementById('hashrate');
+        const minersElement = document.getElementById('miners');
+        const miningStatusElement = document.getElementById('mining-status');
+        const periodButtons = document.querySelectorAll('.period-btn');
+        const expectedEarningsElement = document.getElementById('expected-earnings');
+        const dailyEarningsElement = document.getElementById('daily-earnings');
+        const earningsUsdElement = document.getElementById('earnings-usd');
+        
+        let userData = null;
+        let currentPeriod = 1;
+        let networkDifficulty = 1;
+        let duinoPriceUSD = 0.0012;
+        let isUserMining = false;
+        
+        const DUCO_BASE_REWARD = 0.000017;
+        const BLOCK_TIME = 10;
+        const NETWORK_FACTOR = 0.78;
+        const POOL_FEE = 0.01;
+        const AVG_MINING_HASHRATE = 25000;
+        
+        async function fetchNetworkData() {
+            try {
+                const response = await fetch('https://server.duinocoin.com/api.json');
+                if (response.ok) {
+                    const data = await response.json();
+                    networkDifficulty = data.Difficulty || 1;
+                    return networkDifficulty;
+                }
+            } catch (error) {
+                console.log('Using default network difficulty');
+            }
+            return 1;
+        }
+        
+        async function fetchUserData(username) {
+            loadingElement.style.display = 'block';
+            errorMessage.classList.remove('active');
+            warningMessage.classList.remove('active');
+            fetchDataButton.disabled = true;
+            
+            try {
+                const networkData = await fetchNetworkData();
+                networkDifficulty = networkData;
+                
+                const response = await fetch(`https://server.duinocoin.com/users/${username}`);
+                
+                if (!response.ok) {
+                    throw new Error('User not found');
+                }
+                
+                const data = await response.json();
+                
+                if (data.success === false) {
+                    throw new Error('Error fetching data');
+                }
+                
+                return data.result;
+            } catch (error) {
+                errorMessage.classList.add('active');
+                return null;
+            } finally {
+                loadingElement.style.display = 'none';
+                fetchDataButton.disabled = false;
+            }
+        }
+        
+        function formatNumber(num, decimals = 6) {
+            if (isNaN(num)) return '0';
+            const rounded = Math.round(num * Math.pow(10, decimals)) / Math.pow(10, decimals);
+            return rounded.toFixed(decimals).replace(/\.?0+$/, '');
+        }
+        
+        function formatHashrate(hashrate) {
+            if (!hashrate || hashrate === 0) return '0 H/s';
+            
+            if (hashrate >= 1000000) {
+                return (hashrate / 1000000).toFixed(2) + ' MH/s';
+            } else if (hashrate >= 1000) {
+                return (hashrate / 1000).toFixed(2) + ' kH/s';
+            } else {
+                return hashrate.toFixed(2) + ' H/s';
+            }
+        }
+        
+        function calculateSmartEarnings(hashrate, hours, isMining) {
+            const seconds = hours * 3600;
+            
+            let effectiveHashrate;
+            if (isMining && hashrate > 0) {
+                effectiveHashrate = hashrate;
+            } else {
+                effectiveHashrate = AVG_MINING_HASHRATE;
+            }
+            
+            const baseRewardPerSecond = DUCO_BASE_REWARD * (effectiveHashrate / 1000);
+            const difficultyFactor = 1 / Math.sqrt(networkDifficulty);
+            const blocksInPeriod = seconds / BLOCK_TIME;
+            
+            const rawEarnings = baseRewardPerSecond * seconds * difficultyFactor * NETWORK_FACTOR;
+            const poolFeeDeduction = rawEarnings * (1 - POOL_FEE);
+            
+            const varianceFactor = 0.85 + (Math.random() * 0.3);
+            const finalEarnings = poolFeeDeduction * varianceFactor;
+            
+            return {
+                earnings: Math.max(finalEarnings, 0),
+                isEstimated: !isMining || hashrate === 0
+            };
+        }
+        
+        function displayUserData(data) {
+            if (!data) return;
+            
+            userData = data;
+            
+            const balance = parseFloat(data.balance.balance) || 0;
+            balanceAmount.textContent = `${formatNumber(balance)} DUCO`;
+            
+            const hashrateValue = parseFloat(data.miners.hashrate) || 0;
+            hashrateElement.textContent = formatHashrate(hashrateValue);
+            
+            const minersCount = data.miners.miners_amount || 0;
+            minersElement.textContent = minersCount;
+            
+            isUserMining = hashrateValue > 0 && minersCount > 0;
+            
+            if (isUserMining) {
+                miningStatusElement.textContent = "Active";
+                miningStatusElement.style.color = "#10b981";
+                warningMessage.classList.remove('active');
+            } else {
+                miningStatusElement.textContent = "Inactive";
+                miningStatusElement.style.color = "#ef4444";
+                warningMessage.classList.add('active');
+            }
+            
+            balanceSection.style.display = 'block';
+            calculatorSection.style.display = 'block';
+            
+            calculateMining(currentPeriod);
+        }
+        
+        function calculateMining(hours) {
+            if (!userData) return;
+            
+            const hashrate = parseFloat(userData.miners.hashrate) || 0;
+            const minersCount = userData.miners.miners_amount || 0;
+            const isCurrentlyMining = hashrate > 0 && minersCount > 0;
+            
+            const calculation = calculateSmartEarnings(hashrate, hours, isCurrentlyMining);
+            const dailyCalculation = calculateSmartEarnings(hashrate, 24, isCurrentlyMining);
+            
+            const usdValue = calculation.earnings * duinoPriceUSD;
+            const dailyUsdValue = dailyCalculation.earnings * duinoPriceUSD;
+            
+            expectedEarningsElement.textContent = `${formatNumber(calculation.earnings)} DUCO`;
+            dailyEarningsElement.textContent = `${formatNumber(dailyCalculation.earnings)} DUCO`;
+            earningsUsdElement.textContent = `$${formatNumber(usdValue, 4)}`;
+            
+            if (calculation.isEstimated) {
+                expectedEarningsElement.innerHTML = `${formatNumber(calculation.earnings)} DUCO <span style="font-size: 0.7rem; color: #f59e0b;">(est.)</span>`;
+                dailyEarningsElement.innerHTML = `${formatNumber(dailyCalculation.earnings)} DUCO <span style="font-size: 0.7rem; color: #f59e0b;">(est.)</span>`;
+            }
+        }
+        
+        fetchDataButton.addEventListener('click', async () => {
+            const username = usernameInput.value.trim();
+            
+            if (!username) {
+                alert('Please enter your Duino Coin username');
+                return;
+            }
+            
+            const data = await fetchUserData(username);
+            
+            if (data) {
+                displayUserData(data);
+            }
+        });
+        
+        usernameInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') {
+                fetchDataButton.click();
+            }
+        });
+        
+        periodButtons.forEach(button => {
+            button.addEventListener('click', () => {
+                periodButtons.forEach(btn => btn.classList.remove('active'));
+                button.classList.add('active');
+                currentPeriod = parseInt(button.getAttribute('data-period'));
+                if (userData) calculateMining(currentPeriod);
+            });
+        });
+        
+        window.addEventListener('DOMContentLoaded', () => {
+            setTimeout(() => {
+                fetchDataButton.click();
+            }, 500);
+        });
+    </script>
+</body>
+</html>
